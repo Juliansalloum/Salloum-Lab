@@ -1,0 +1,498 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1a2220;
+    --ink-soft:#4d5955;
+    --paper:#ffffff;
+    --canvas:#f2f6f4;
+    --line:#dbe4e0;
+    --teal:#1f6f5c;
+    --teal-deep:#154a3d;
+    --teal-tint:#e6f1ed;
+    --amber:#c17a2b;
+    --danger:#b3462c;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--canvas);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{max-width:520px;margin:0 auto;padding:18px 16px 60px;}
+
+  .brandbar{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;}
+  .brandbar h1{
+    font-family:'Source Serif 4',serif;
+    font-size:22px;
+    font-weight:600;
+    margin:0;
+    color:var(--teal-deep);
+  }
+  .brandbar span{font-size:12px;color:var(--ink-soft);}
+
+  nav.tabs{
+    display:flex;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:3px;
+    margin-bottom:18px;
+    gap:2px;
+  }
+  nav.tabs button{
+    flex:1;
+    border:none;
+    background:transparent;
+    padding:8px 4px;
+    font-family:inherit;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    border-radius:999px;
+    cursor:pointer;
+  }
+  nav.tabs button.active{background:var(--teal);color:#fff;}
+
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-bottom:14px;
+  }
+  .card h2{
+    font-size:14px;
+    margin:0 0 12px;
+    color:var(--teal-deep);
+    font-weight:700;
+  }
+  .field{margin-bottom:12px;}
+  .field label{
+    display:block;
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:4px;
+  }
+  .field input, .field textarea{
+    width:100%;
+    font-family:inherit;
+    font-size:15px;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#fcfdfd;
+    color:var(--ink);
+  }
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .row3{display:grid;grid-template-columns:1.6fr 0.7fr auto;gap:8px;align-items:end;}
+
+  button.btn{
+    font-family:inherit;
+    font-size:14px;
+    font-weight:600;
+    border:none;
+    border-radius:8px;
+    padding:10px 14px;
+    cursor:pointer;
+  }
+  .btn-primary{background:var(--teal);color:#fff;}
+  .btn-outline{background:transparent;color:var(--teal-deep);border:1px solid var(--teal);}
+  .btn-danger{background:transparent;color:var(--danger);border:1px solid var(--danger);padding:8px 10px;font-size:12px;}
+  .btn-block{width:100%;}
+
+  .service-chip{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    margin-bottom:8px;
+    background:#fcfdfd;
+  }
+  .service-chip .meta strong{display:block;font-size:14px;}
+  .service-chip .meta span{font-size:12px;color:var(--ink-soft);}
+  .service-chip .actions{display:flex;gap:8px;align-items:center;}
+  .service-chip button.add-line{
+    background:var(--teal-tint);color:var(--teal-deep);border:none;
+    width:30px;height:30px;border-radius:50%;font-size:17px;font-weight:700;cursor:pointer;
+  }
+
+  .lineitem{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:9px 0;border-bottom:1px dashed var(--line);
+    font-size:14px;
+  }
+  .lineitem:last-child{border-bottom:none;}
+  .lineitem .qty-controls{display:flex;align-items:center;gap:8px;}
+  .lineitem .qty-controls button{
+    width:24px;height:24px;border-radius:50%;border:1px solid var(--line);background:#fff;
+    font-size:14px;line-height:1;cursor:pointer;color:var(--ink-soft);
+  }
+  .lineitem .remove{color:var(--danger);font-size:12px;background:none;border:none;cursor:pointer;margin-left:8px;}
+
+  .totalline{display:flex;justify-content:space-between;font-size:15px;padding:10px 0 0;font-weight:700;color:var(--teal-deep);border-top:1px solid var(--line);margin-top:8px;}
+
+  .empty{font-size:13px;color:var(--ink-soft);font-style:italic;padding:6px 0;}
+
+  .hist-item{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px;background:#fcfdfd;cursor:pointer;}
+  .hist-item strong{font-size:14px;}
+  .hist-item div{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+
+  #printArea{display:none;}
+
+  @media print{
+    body *{visibility:hidden;}
+    #printArea, #printArea *{visibility:visible;}
+    #printArea{
+      display:block;
+      position:absolute;top:0;left:0;width:100%;
+      padding:0;
+      font-family:'Inter',sans-serif;
+    }
+    .p-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1a2220;padding-bottom:14px;margin-bottom:20px;}
+    .p-head h1{font-family:'Source Serif 4',serif;font-size:26px;margin:0 0 4px;}
+    .p-head .biz{font-size:12px;color:#333;line-height:1.5;}
+    .p-meta{text-align:right;font-size:12px;line-height:1.6;}
+    .p-parties{display:flex;gap:40px;margin-bottom:22px;font-size:13px;}
+    .p-parties div strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:#555;margin-bottom:3px;}
+    table.p-table{width:100%;border-collapse:collapse;font-size:13px;}
+    table.p-table th{text-align:left;border-bottom:1px solid #1a2220;padding:6px 4px;font-size:11px;text-transform:uppercase;letter-spacing:.03em;}
+    table.p-table td{padding:8px 4px;border-bottom:1px solid #ddd;}
+    table.p-table td.num, table.p-table th.num{text-align:right;}
+    .p-total{display:flex;justify-content:flex-end;margin-top:14px;}
+    .p-total table{font-size:14px;}
+    .p-total td{padding:4px 8px;}
+    .p-total tr.grand td{font-weight:700;font-size:16px;border-top:2px solid #1a2220;}
+  }
+</style>
+
+<div id="app">
+  <div class="brandbar">
+    <h1 id="brandName">Invoice</h1>
+    <span id="brandTag">for services rendered</span>
+  </div>
+
+  <nav class="tabs">
+    <button class="active" data-tab="invoice">New Invoice</button>
+    <button data-tab="services">Services</button>
+    <button data-tab="history">History</button>
+    <button data-tab="business">Business</button>
+  </nav>
+
+  <!-- INVOICE TAB -->
+  <div class="tabpanel" id="tab-invoice">
+    <div class="card">
+      <h2>Details</h2>
+      <div class="row2">
+        <div class="field"><label>Invoice #</label><input id="invNumber" type="text"></div>
+        <div class="field"><label>Date</label><input id="invDate" type="date"></div>
+      </div>
+      <div class="field"><label>Doctor</label><input id="invDoctor" type="text" placeholder="Dr. name"></div>
+      <div class="field"><label>Patient</label><input id="invPatient" type="text" placeholder="Patient name"></div>
+    </div>
+
+    <div class="card">
+      <h2>Add a service</h2>
+      <div id="serviceQuickList"></div>
+      <div class="field" style="margin-top:6px;">
+        <label>Or add a custom line</label>
+        <div class="row3">
+          <input id="customName" type="text" placeholder="Description">
+          <input id="customPrice" type="number" step="0.01" placeholder="$">
+          <button class="btn btn-outline" id="addCustomBtn">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Invoice lines</h2>
+      <div id="lineItems"><div class="empty">No lines added yet.</div></div>
+      <div class="totalline"><span>Total</span><span id="invTotal">$0.00</span></div>
+    </div>
+
+    <button class="btn btn-primary btn-block" id="printBtn" style="padding:13px;font-size:15px;">Print / Save PDF</button>
+    <button class="btn btn-outline btn-block" id="saveInvBtn" style="margin-top:10px;">Save to history</button>
+  </div>
+
+  <!-- SERVICES TAB -->
+  <div class="tabpanel" id="tab-services" style="display:none;">
+    <div class="card">
+      <h2>Your services</h2>
+      <div id="serviceList"><div class="empty">No services yet — add one below.</div></div>
+    </div>
+    <div class="card">
+      <h2>Add a service</h2>
+      <div class="field"><label>Service name</label><input id="newServiceName" type="text" placeholder="e.g. Consultation"></div>
+      <div class="field"><label>Price</label><input id="newServicePrice" type="number" step="0.01" placeholder="0.00"></div>
+      <button class="btn btn-primary btn-block" id="addServiceBtn">Add service</button>
+    </div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div class="tabpanel" id="tab-history" style="display:none;">
+    <div class="card">
+      <h2>Saved invoices</h2>
+      <div id="historyList"><div class="empty">Nothing saved yet.</div></div>
+    </div>
+  </div>
+
+  <!-- BUSINESS TAB -->
+  <div class="tabpanel" id="tab-business" style="display:none;">
+    <div class="card">
+      <h2>Business info</h2>
+      <div class="field"><label>Business name</label><input id="bizName" type="text" placeholder="Your business name"></div>
+      <div class="field"><label>Address</label><input id="bizAddress" type="text" placeholder="Street, City, State ZIP"></div>
+      <div class="field"><label>Phone</label><input id="bizPhone" type="text" placeholder="(555) 555-5555"></div>
+      <div class="field"><label>Email</label><input id="bizEmail" type="text" placeholder="you@business.com"></div>
+      <button class="btn btn-primary btn-block" id="saveBizBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT-ONLY AREA -->
+<div id="printArea">
+  <div class="p-head">
+    <div>
+      <h1 id="pBizName">Business Name</h1>
+      <div class="p-biz biz" id="pBizDetails"></div>
+    </div>
+    <div class="p-meta">
+      <div><strong>Invoice #<span id="pInvNumber"></span></strong></div>
+      <div id="pInvDate"></div>
+    </div>
+  </div>
+  <div class="p-parties">
+    <div><strong>Doctor</strong><span id="pDoctor"></span></div>
+    <div><strong>Patient</strong><span id="pPatient"></span></div>
+  </div>
+  <table class="p-table">
+    <thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Amount</th></tr></thead>
+    <tbody id="pTableBody"></tbody>
+  </table>
+  <div class="p-total">
+    <table>
+      <tr class="grand"><td>Total</td><td id="pTotal"></td></tr>
+    </table>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  let services = [];
+  let business = {};
+  let currentLines = []; // {name, price, qty}
+  let invoiceCounter = 1;
+
+  // ---------- storage helpers (browser localStorage, persists on-device) ----------
+  const STORE_PREFIX = 'invoiceApp:';
+  async function load(key, fallback){
+    try{
+      const raw = localStorage.getItem(STORE_PREFIX + key);
+      return raw ? JSON.parse(raw) : fallback;
+    }catch(e){ return fallback; }
+  }
+  async function save(key, value){
+    try{ localStorage.setItem(STORE_PREFIX + key, JSON.stringify(value)); }
+    catch(e){ console.error('save failed', key, e); }
+  }
+
+  // ---------- tabs ----------
+  document.querySelectorAll('nav.tabs button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tabpanel').forEach(p=>p.style.display='none');
+      $('tab-'+btn.dataset.tab).style.display='block';
+    });
+  });
+
+  function money(n){ return '$' + (Math.round(n*100)/100).toFixed(2); }
+
+  // ---------- services ----------
+  function renderServices(){
+    const list = $('serviceList');
+    const quick = $('serviceQuickList');
+    if(!services.length){
+      list.innerHTML = '<div class="empty">No services yet — add one below.</div>';
+      quick.innerHTML = '<div class="empty">Add services in the Services tab to see quick-add buttons here.</div>';
+      return;
+    }
+    list.innerHTML = services.map(s => `
+      <div class="service-chip">
+        <div class="meta"><strong>${escapeHtml(s.name)}</strong><span>${money(s.price)}</span></div>
+        <div class="actions"><button class="btn-danger" data-del="${s.id}">Remove</button></div>
+      </div>`).join('');
+    quick.innerHTML = services.map(s => `
+      <div class="service-chip">
+        <div class="meta"><strong>${escapeHtml(s.name)}</strong><span>${money(s.price)}</span></div>
+        <div class="actions"><button class="add-line" data-add="${s.id}">+</button></div>
+      </div>`).join('');
+    list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
+      services = services.filter(s=>s.id !== b.dataset.del);
+      await save('services', services);
+      renderServices();
+    }));
+    quick.querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click', ()=>{
+      const s = services.find(s=>s.id===b.dataset.add);
+      addLine(s.name, s.price);
+    }));
+  }
+
+  $('addServiceBtn').addEventListener('click', async ()=>{
+    const name = $('newServiceName').value.trim();
+    const price = parseFloat($('newServicePrice').value);
+    if(!name || isNaN(price)) return;
+    services.push({id: 's'+Date.now(), name, price});
+    await save('services', services);
+    $('newServiceName').value=''; $('newServicePrice').value='';
+    renderServices();
+  });
+
+  // ---------- business info ----------
+  function renderBusinessFields(){
+    $('bizName').value = business.name || '';
+    $('bizAddress').value = business.address || '';
+    $('bizPhone').value = business.phone || '';
+    $('bizEmail').value = business.email || '';
+    $('brandName').textContent = business.name || 'Invoice';
+  }
+  $('saveBizBtn').addEventListener('click', async ()=>{
+    business = {
+      name: $('bizName').value.trim(),
+      address: $('bizAddress').value.trim(),
+      phone: $('bizPhone').value.trim(),
+      email: $('bizEmail').value.trim()
+    };
+    await save('business-info', business);
+    renderBusinessFields();
+  });
+
+  // ---------- invoice lines ----------
+  function addLine(name, price){
+    const existing = currentLines.find(l=>l.name===name && l.price===price);
+    if(existing){ existing.qty += 1; }
+    else{ currentLines.push({name, price, qty:1}); }
+    renderLines();
+  }
+  function renderLines(){
+    const wrap = $('lineItems');
+    if(!currentLines.length){
+      wrap.innerHTML = '<div class="empty">No lines added yet.</div>';
+    }else{
+      wrap.innerHTML = currentLines.map((l,i)=>`
+        <div class="lineitem">
+          <div>${escapeHtml(l.name)} <span style="color:var(--ink-soft);">(${money(l.price)})</span></div>
+          <div class="qty-controls">
+            <button data-dec="${i}">–</button>
+            <span>${l.qty}</span>
+            <button data-inc="${i}">+</button>
+            <button class="remove" data-rm="${i}">remove</button>
+          </div>
+        </div>`).join('');
+      wrap.querySelectorAll('[data-inc]').forEach(b=>b.addEventListener('click',()=>{currentLines[b.dataset.inc].qty++;renderLines();}));
+      wrap.querySelectorAll('[data-dec]').forEach(b=>b.addEventListener('click',()=>{
+        const i=b.dataset.dec; currentLines[i].qty--; if(currentLines[i].qty<=0) currentLines.splice(i,1); renderLines();
+      }));
+      wrap.querySelectorAll('[data-rm]').forEach(b=>b.addEventListener('click',()=>{currentLines.splice(b.dataset.rm,1);renderLines();}));
+    }
+    const total = currentLines.reduce((sum,l)=>sum+l.price*l.qty,0);
+    $('invTotal').textContent = money(total);
+  }
+
+  $('addCustomBtn').addEventListener('click', ()=>{
+    const name = $('customName').value.trim();
+    const price = parseFloat($('customPrice').value);
+    if(!name || isNaN(price)) return;
+    addLine(name, price);
+    $('customName').value=''; $('customPrice').value='';
+  });
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  // ---------- print ----------
+  function fillPrintArea(){
+    $('pBizName').textContent = business.name || 'Your Business';
+    $('pBizDetails').innerHTML = [business.address, business.phone, business.email].filter(Boolean).map(escapeHtml).join('<br>');
+    $('pInvNumber').textContent = $('invNumber').value || '';
+    $('pInvDate').textContent = $('invDate').value || '';
+    $('pDoctor').textContent = $('invDoctor').value || '—';
+    $('pPatient').textContent = $('invPatient').value || '—';
+    const tbody = $('pTableBody');
+    tbody.innerHTML = currentLines.map(l => `
+      <tr><td>${escapeHtml(l.name)}</td><td class="num">${l.qty}</td><td class="num">${money(l.price)}</td><td class="num">${money(l.price*l.qty)}</td></tr>
+    `).join('');
+    const total = currentLines.reduce((sum,l)=>sum+l.price*l.qty,0);
+    $('pTotal').textContent = money(total);
+  }
+  $('printBtn').addEventListener('click', ()=>{
+    fillPrintArea();
+    window.print();
+  });
+
+  // ---------- history ----------
+  let history = [];
+  function renderHistory(){
+    const wrap = $('historyList');
+    if(!history.length){ wrap.innerHTML = '<div class="empty">Nothing saved yet.</div>'; return; }
+    wrap.innerHTML = history.slice().reverse().map((h,ri)=>{
+      const i = history.length-1-ri;
+      const total = h.items.reduce((s,l)=>s+l.price*l.qty,0);
+      return `<div class="hist-item" data-idx="${i}">
+        <strong>#${escapeHtml(h.number)} — ${escapeHtml(h.patient||'')}</strong>
+        <div>${escapeHtml(h.date)} · Dr. ${escapeHtml(h.doctor||'—')} · ${money(total)}</div>
+      </div>`;
+    }).join('');
+    wrap.querySelectorAll('[data-idx]').forEach(el=>el.addEventListener('click', ()=>{
+      const h = history[el.dataset.idx];
+      $('invNumber').value = h.number;
+      $('invDate').value = h.date;
+      $('invDoctor').value = h.doctor;
+      $('invPatient').value = h.patient;
+      currentLines = h.items.map(l=>({...l}));
+      renderLines();
+      document.querySelector('nav.tabs button[data-tab="invoice"]').click();
+    }));
+  }
+  $('saveInvBtn').addEventListener('click', async ()=>{
+    if(!currentLines.length) return;
+    const record = {
+      number: $('invNumber').value || String(invoiceCounter),
+      date: $('invDate').value,
+      doctor: $('invDoctor').value,
+      patient: $('invPatient').value,
+      items: currentLines.map(l=>({...l}))
+    };
+    history.push(record);
+    await save('invoices', history);
+    invoiceCounter += 1;
+    await save('invoice-counter', invoiceCounter);
+    renderHistory();
+    $('saveInvBtn').textContent = 'Saved ✓';
+    setTimeout(()=>{ $('saveInvBtn').textContent='Save to history'; }, 1500);
+  });
+
+  // ---------- init ----------
+  async function init(){
+    services = await load('services', []);
+    business = await load('business-info', {});
+    history = await load('invoices', []);
+    invoiceCounter = await load('invoice-counter', history.length + 1);
+
+    renderServices();
+    renderBusinessFields();
+    renderHistory();
+    renderLines();
+
+    $('invDate').value = new Date().toISOString().slice(0,10);
+    $('invNumber').value = String(invoiceCounter).padStart(4,'0');
+  }
+  init();
+})();
+</script>
