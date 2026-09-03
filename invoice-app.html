@@ -173,6 +173,8 @@
       font-family:'Inter',sans-serif;
     }
     .p-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1a2220;padding-bottom:14px;margin-bottom:20px;}
+    .p-brand{display:flex;align-items:center;gap:16px;}
+    .p-logo{width:60px;height:60px;object-fit:contain;flex-shrink:0;}
     .p-head h1{font-family:'Source Serif 4',serif;font-size:26px;margin:0 0 4px;}
     .p-head .biz{font-size:12px;color:#333;line-height:1.5;}
     .p-meta{text-align:right;font-size:12px;line-height:1.6;}
@@ -186,6 +188,8 @@
     .p-total table{font-size:14px;}
     .p-total td{padding:4px 8px;}
     .p-total tr.grand td{font-weight:700;font-size:16px;border-top:2px solid #1a2220;}
+    .p-thanks{margin-top:34px;font-size:15px;font-weight:700;color:#333;line-height:1.6;}
+    .p-thanks p{margin:0;}
   }
 </style>
 </head>
@@ -212,12 +216,15 @@
         <div class="field"><label>Invoice #</label><input id="invNumber" type="text"></div>
         <div class="field"><label>Date</label><input id="invDate" type="date"></div>
       </div>
-      <div class="field"><label>Doctor</label><input id="invDoctor" type="text" placeholder="Dr. name"></div>
-      <div class="field"><label>Patient</label><input id="invPatient" type="text" placeholder="Patient name"></div>
+      <div class="row2">
+        <div class="field"><label>Doctor</label><input id="invDoctor" type="text" placeholder="Dr. name"></div>
+        <div class="field"><label>Billing period</label><input id="invPeriod" type="text" placeholder="e.g. May 2026"></div>
+      </div>
     </div>
 
     <div class="card">
       <h2>Add a service</h2>
+      <div class="field"><label>Patient</label><input id="linePatient" type="text" placeholder="Patient this line is for"></div>
       <div id="serviceQuickList"></div>
       <div class="field" style="margin-top:6px;">
         <label>Or add a custom line</label>
@@ -277,9 +284,12 @@
 <!-- PRINT-ONLY AREA -->
 <div id="printArea">
   <div class="p-head">
-    <div>
-      <h1 id="pBizName">Business Name</h1>
-      <div class="p-biz biz" id="pBizDetails"></div>
+    <div class="p-brand">
+      <img class="p-logo" src="icon-512.png" alt="">
+      <div>
+        <h1 id="pBizName">Business Name</h1>
+        <div class="p-biz biz" id="pBizDetails"></div>
+      </div>
     </div>
     <div class="p-meta">
       <div><strong>Invoice #<span id="pInvNumber"></span></strong></div>
@@ -288,16 +298,20 @@
   </div>
   <div class="p-parties">
     <div><strong>Doctor</strong><span id="pDoctor"></span></div>
-    <div><strong>Patient</strong><span id="pPatient"></span></div>
+    <div><strong>Billing period</strong><span id="pPeriod"></span></div>
   </div>
   <table class="p-table">
-    <thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Amount</th></tr></thead>
+    <thead><tr><th>Patient</th><th>Description</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Amount</th></tr></thead>
     <tbody id="pTableBody"></tbody>
   </table>
   <div class="p-total">
     <table>
       <tr class="grand"><td>Total</td><td id="pTotal"></td></tr>
     </table>
+  </div>
+  <div class="p-thanks">
+    <p>Thank you so much!</p>
+    <p>Make checks payable to: Joseph Salloum</p>
   </div>
 </div>
 
@@ -360,7 +374,7 @@
     }));
     quick.querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click', ()=>{
       const s = services.find(s=>s.id===b.dataset.add);
-      addLine(s.name, s.price);
+      addLine(s.name, s.price, $('linePatient').value.trim());
     }));
   }
 
@@ -394,10 +408,11 @@
   });
 
   // ---------- invoice lines ----------
-  function addLine(name, price){
-    const existing = currentLines.find(l=>l.name===name && l.price===price);
+  function addLine(name, price, patient){
+    patient = (patient || '').trim();
+    const existing = currentLines.find(l=>l.name===name && l.price===price && l.patient===patient);
     if(existing){ existing.qty += 1; }
-    else{ currentLines.push({name, price, qty:1}); }
+    else{ currentLines.push({name, price, qty:1, patient}); }
     renderLines();
   }
   function renderLines(){
@@ -407,7 +422,7 @@
     }else{
       wrap.innerHTML = currentLines.map((l,i)=>`
         <div class="lineitem">
-          <div>${escapeHtml(l.name)} <span style="color:var(--ink-soft);">(${money(l.price)})</span></div>
+          <div><strong>${escapeHtml(l.patient||'—')}</strong> — ${escapeHtml(l.name)} <span style="color:var(--ink-soft);">(${money(l.price)})</span></div>
           <div class="qty-controls">
             <button data-dec="${i}">–</button>
             <span>${l.qty}</span>
@@ -429,7 +444,7 @@
     const name = $('customName').value.trim();
     const price = parseFloat($('customPrice').value);
     if(!name || isNaN(price)) return;
-    addLine(name, price);
+    addLine(name, price, $('linePatient').value.trim());
     $('customName').value=''; $('customPrice').value='';
   });
 
@@ -444,10 +459,10 @@
     $('pInvNumber').textContent = $('invNumber').value || '';
     $('pInvDate').textContent = $('invDate').value || '';
     $('pDoctor').textContent = $('invDoctor').value || '—';
-    $('pPatient').textContent = $('invPatient').value || '—';
+    $('pPeriod').textContent = $('invPeriod').value || '—';
     const tbody = $('pTableBody');
     tbody.innerHTML = currentLines.map(l => `
-      <tr><td>${escapeHtml(l.name)}</td><td class="num">${l.qty}</td><td class="num">${money(l.price)}</td><td class="num">${money(l.price*l.qty)}</td></tr>
+      <tr><td>${escapeHtml(l.patient||'—')}</td><td>${escapeHtml(l.name)}</td><td class="num">${l.qty}</td><td class="num">${money(l.price)}</td><td class="num">${money(l.price*l.qty)}</td></tr>
     `).join('');
     const total = currentLines.reduce((sum,l)=>sum+l.price*l.qty,0);
     $('pTotal').textContent = money(total);
@@ -465,9 +480,11 @@
     wrap.innerHTML = history.slice().reverse().map((h,ri)=>{
       const i = history.length-1-ri;
       const total = h.items.reduce((s,l)=>s+l.price*l.qty,0);
+      const patients = [...new Set(h.items.map(l=>l.patient).filter(Boolean))];
       return `<div class="hist-item" data-idx="${i}">
-        <strong>#${escapeHtml(h.number)} — ${escapeHtml(h.patient||'')}</strong>
-        <div>${escapeHtml(h.date)} · Dr. ${escapeHtml(h.doctor||'—')} · ${money(total)}</div>
+        <strong>#${escapeHtml(h.number)} — Dr. ${escapeHtml(h.doctor||'—')}</strong>
+        <div>${escapeHtml(h.date)} · ${escapeHtml(h.period||'—')} · ${money(total)}</div>
+        <div>${escapeHtml(patients.join(', ')||'—')}</div>
       </div>`;
     }).join('');
     wrap.querySelectorAll('[data-idx]').forEach(el=>el.addEventListener('click', ()=>{
@@ -475,7 +492,7 @@
       $('invNumber').value = h.number;
       $('invDate').value = h.date;
       $('invDoctor').value = h.doctor;
-      $('invPatient').value = h.patient;
+      $('invPeriod').value = h.period;
       currentLines = h.items.map(l=>({...l}));
       renderLines();
       document.querySelector('nav.tabs button[data-tab="invoice"]').click();
@@ -487,7 +504,7 @@
       number: $('invNumber').value || String(invoiceCounter),
       date: $('invDate').value,
       doctor: $('invDoctor').value,
-      patient: $('invPatient').value,
+      period: $('invPeriod').value,
       items: currentLines.map(l=>({...l}))
     };
     history.push(record);
